@@ -51,13 +51,13 @@ def analyse(pages, markers):
             sys.exit(f"Заголовок не найден: {title}")
     layout = {"pages": result}
     # Распределение строк таблиц по страницам
-    flat = [norm(p) for p in pages]
+    flat = [re.sub(r"\s+", "", p) for p in pages]
     for num, cells in markers["tables"].items():
         # поиск начинается со страницы, на которой находится название таблицы
-        start = next(i for i, p in enumerate(flat, 1) if f"Таблица {num} –" in p)
+        start = next(i for i, p in enumerate(flat, 1) if f"Таблица{num}–" in p)
         row_pages = []
         for c in cells:
-            key = norm(c)[:22]
+            key = re.sub(r"\s+", "", c)[:8]
             prev_p = row_pages[-1] if row_pages else start
             found = [i for i, p in enumerate(flat, 1) if key in p and i >= prev_p]
             if not found:
