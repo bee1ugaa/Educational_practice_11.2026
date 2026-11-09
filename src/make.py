@@ -1,13 +1,15 @@
 """Сборка отчёта с подбором номеров страниц оглавления и разбиения таблиц.
 
-Запуск: python3 src/make.py
+Запуск: python3 src/make.py [variant1|variant2]
 Требуются: Node.js с пакетом docx, LibreOffice (soffice), poppler-utils (pdftotext).
-Результат: report/Практическая_работа_1.docx и report/Практическая_работа_1.pdf
+Результат: <папка варианта>/Практическая_работа_1.docx и .pdf
+  variant1 – report/, variant2 – report_variant2/
 """
 import json, os, re, shutil, subprocess, sys, tempfile, pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUT_DIR = ROOT / "report"
+VARIANT = sys.argv[1] if len(sys.argv) > 1 else "variant1"
+OUT_DIR = ROOT / ("report" if VARIANT == "variant1" else f"report_{VARIANT}")
 NAME = "Практическая_работа_1"
 
 
@@ -19,7 +21,7 @@ def build(tmp, layout):
     lay = tmp / "layout.json"
     lay.write_text(json.dumps(layout, ensure_ascii=False), encoding="utf-8")
     docx = tmp / f"{NAME}.docx"
-    env = dict(os.environ, MARKERS=str(tmp / "markers.json"))
+    env = dict(os.environ, MARKERS=str(tmp / "markers.json"), VARIANT=str(ROOT / "src" / f"{VARIANT}.js"))
     subprocess.run(["node", str(ROOT / "src/build.js"), str(docx), str(lay)], check=True, env=env,
                    stdout=subprocess.DEVNULL)
     subprocess.run(["soffice", "--headless", "--convert-to", "pdf", "--outdir", str(tmp), str(docx)],
